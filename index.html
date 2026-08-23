@@ -49,12 +49,11 @@
       <input type="hidden" id="ad_id" name="ad_id">
       <input type="hidden" id="page_url" name="page_url">
 
-      <button type="submit">Enviar Cadastramento</button>
+      <button type="submit" id="btnSubmit">Enviar Cadastramento</button>
     </form>
   </div>
 
   <script>
-    // Preenche os campos ocultos com os dados capturados
     document.addEventListener("DOMContentLoaded", function() {
       const data = JSON.parse(sessionStorage.getItem('user_tracking') || '{}');
       for (const key in data) {
@@ -63,10 +62,13 @@
       }
     });
 
-    // Envio do formulário
     document.getElementById('leadForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
+      const btn = document.getElementById('btnSubmit');
+      btn.innerText = "Enviando...";
+      btn.disabled = true;
+
       const payload = {
         nome: document.getElementById('nome').value,
         email: document.getElementById('email').value,
@@ -79,9 +81,23 @@
         created_at: new Date().toISOString()
       };
 
-      console.log("Dados prontos para envio ao Webhook:", payload);
-      alert("Cadastro realizado! Veja no console do navegador o payload capturado.");
-      // Aqui depois trocaremos o console.log pelo fetch() apontando para o seu Webhook no Make ou Supabase
+      fetch('https://hook.us2.make.com/63kwaupbuuhsvgwpb70pjrbiiqqu6tnf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        alert("Cadastro realizado com sucesso!");
+        document.getElementById('leadForm').reset();
+      })
+      .catch(error => {
+        console.error('Erro ao enviar:', error);
+        alert("Erro ao enviar cadastro.");
+      })
+      .finally(() => {
+        btn.innerText = "Enviar Cadastramento";
+        btn.disabled = false;
+      });
     });
   </script>
 
